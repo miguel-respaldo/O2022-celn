@@ -5,7 +5,7 @@ import cv2 as cv
 import socket
 
 HOST = "127.0.0.1"  # The server's hostname or IP address
-PORT = 10000        # The port used by the server
+PORT = 10001        # The port used by the server
 
 camara = cv.VideoCapture(0)
 
@@ -34,12 +34,17 @@ while True:
     #gris = cv.cvtColor(imagen, cv.COLOR_BGR2GRAY)
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((HOST, PORT))
+        print("mandando")
         s.sendall(imgbyte)
+        print("listo")
         while True:
+            print("resiviendo")
             data = s.recv(4096)
             if not data:
+                print("break")
                 break
             newbimg.extend(list(data))
+        print("fuera del while")
 
     gris = np.ndarray(shape=(480,640), dtype='uint8',
                       buffer=bytearray(newbimg))

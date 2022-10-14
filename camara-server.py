@@ -5,7 +5,7 @@ import cv2 as cv
 import socket
 
 HOST = "127.0.0.1"  # Standard loopback interface address (localhost)
-PORT = 10000        # Port to listen on (non-privileged ports are > 1023)
+PORT = 10001        # Port to listen on (non-privileged ports are > 1023)
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.bind((HOST, PORT))
@@ -13,14 +13,20 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     while True:
         conn, addr = s.accept()
         newbimg = list()
+        cont=0
         with conn:
             print(f"Connected by {addr}")
             while True:
                 data = conn.recv(4096)
+                print("resiviendo", cont)
+                cont +=1
                 if not data:
+                    print("break")
                     break
                 newbimg.extend(list(data))
+                print(len(newbimg))
 
+            print("fuera del while")
             color = np.ndarray(shape=(480,640,3), dtype='uint8',
                                 buffer=bytearray(newbimg))
 
