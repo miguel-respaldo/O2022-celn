@@ -32,8 +32,6 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 if img_len > 0 and len(b_imagen) > img_len:
                     break
 
-            print("Procesando imagen", len(b_imagen))
-
             color = np.ndarray(shape=(h,w,d), dtype='uint8',
                                 buffer=b_imagen, offset=6)
 

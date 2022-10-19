@@ -41,7 +41,6 @@ while True:
             if not data:
                 break
             b_imagen += data
-        print("Imagen recivida")
 
     h = int.from_bytes(b_imagen[:2],  byteorder="little")
     w = int.from_bytes(b_imagen[2:4], byteorder="little")
