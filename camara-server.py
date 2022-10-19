@@ -7,37 +7,40 @@ import socket
 HOST = "127.0.0.1"  # Standard loopback interface address (localhost)
 PORT = 10000        # Port to listen on (non-privileged ports are > 1023)
 
+b_imagen = bytearray()
+
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.bind((HOST, PORT))
     s.listen()
     while True:
         conn, addr = s.accept()
-        newbimg = list()
-        cont=0
+        # Limpiamos el arreglo
+        b_imagen.clear()
         with conn:
             print(f"Connected by {addr}")
             while True:
                 data = conn.recv(4096)
-                print("resiviendo", len(data),":", cont)
-                cont +=1
-                if not data:
-                    print("break")
-                    break
-                newbimg.extend(list(data))
-                print(len(newbimg))
 
-            print("fuera del while")
-            color = np.ndarray(shape=(480,640,3), dtype='uint8',
-                                buffer=bytearray(newbimg))
+                b_imagen += data
+                # Leemos los datos de with, height y deep
+                h = int.from_bytes(b_imagen[:2],  byteorder="little")
+                w = int.from_bytes(b_imagen[2:4], byteorder="little")
+                d = int.from_bytes(b_imagen[4:6], byteorder="little")
+
+                img_len = h*w*d
+
+                if img_len > 0 and len(b_imagen) > img_len:
+                    break
+
+            print("Procesando imagen", len(b_imagen))
+
+            color = np.ndarray(shape=(h,w,d), dtype='uint8',
+                                buffer=b_imagen, offset=6)
 
             gris = cv.cvtColor(color, cv.COLOR_BGR2GRAY)
 
-            # La convierte en arreglo lineal
-            img1d = gris.flatten()
-            # Creo un bytearray con el tamaño del arreglo lineal
-            imgbyte = bytearray(img1d.size)
-            # Copio el arreglo al bytearray
-            for i in range(img1d.size):
-                imgbyte[i] = img1d[i]
-            conn.sendall(data)
+            h, w = gris.shape 
 
+            conn.sendall(h.to_bytes(2,byteorder="little"))
+            conn.sendall(w.to_bytes(2,byteorder="little"))
+            conn.sendall(gris.tobytes())

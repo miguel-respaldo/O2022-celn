@@ -21,33 +21,33 @@ while True:
         print("No podemos capturar la imagen de la camara")
         break
 
-    # La convierte en arreglo lineal
-    img1d = imagen.flatten()
-    # Creo un bytearray con el tamaño del arreglo lineal
-    imgbyte = bytearray(img1d.size)
-    # Copio el arreglo al bytearray
-    for i in range(img1d.size):
-        imgbyte[i] = img1d[i]
 
-    newbimg = list()
+    # Obtenemos height, width y depth
+    h, w, d = imagen.shape
+
+    b_imagen = bytearray()
 
     #gris = cv.cvtColor(imagen, cv.COLOR_BGR2GRAY)
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((HOST, PORT))
-        print("mandando")
-        s.sendall(imgbyte)
-        print("listo")
+        # Enviamos los datos de la imagen
+        s.sendall(h.to_bytes(2,byteorder="little"))
+        s.sendall(w.to_bytes(2,byteorder="little"))
+        s.sendall(d.to_bytes(2,byteorder="little"))
+        # Enviamos la imagen
+        s.sendall(imagen.tobytes())
         while True:
-            print("resiviendo")
             data = s.recv(4096)
             if not data:
-                print("break")
                 break
-            newbimg.extend(list(data))
-        print("fuera del while")
+            b_imagen += data
+        print("Imagen recivida")
 
-    gris = np.ndarray(shape=(480,640), dtype='uint8',
-                      buffer=bytearray(newbimg))
+    h = int.from_bytes(b_imagen[:2],  byteorder="little")
+    w = int.from_bytes(b_imagen[2:4], byteorder="little")
+
+    gris = np.ndarray(shape=(h,w), dtype='uint8',
+                      buffer=b_imagen, offset=4)
     
     cv.imshow("Camara", gris)
 
