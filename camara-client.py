@@ -5,7 +5,7 @@ import cv2 as cv
 import socket
 
 HOST = "127.0.0.1"  # The server's hostname or IP address
-PORT = 10001        # The port used by the server
+PORT = 10000        # The port used by the server
 
 camara = cv.VideoCapture(0)
 
